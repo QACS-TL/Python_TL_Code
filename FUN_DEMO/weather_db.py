@@ -61,6 +61,36 @@ class Weather_db:
 
         return None
 
+    def query_city(self, table_name="weather"):
+        """ Query and return all rows in formatted str output """
+        sql = f"SELECT * FROM {table_name}"
+        try:
+            self.cur.execute(sql)
+            rows = self.cur.fetchall()
+            while True:
+                cities_set = set()
+                for row in rows:
+                    cities_set.add(row[1])
+                cities_list = sorted(list(cities_set))
+                for i, row in enumerate(list(cities_list), 1):
+                    print(i, row)
+                option = input(f"Please enter the appropriate number for the associated city's weather, [qQ=quit]")
+                if option.upper() == "Q":
+                    return None
+                elif not option.isnumeric:
+                    continue
+                else:
+                    selected_city = cities_list[int(option)-1]
+                    city_data = [row for row in rows if row[1] == selected_city]  # List Comprehension
+                    for row in city_data:
+                        print(row)
+                    break
+        except Exception as err:
+            print(f"Error accessing {table_name}: [{err}]\n", file=sys.stderr)
+
+
+        return None
+
     def insert_row(self, table_name="weather", **kwargs):
         """ Insert new row into weather db table """
         weather = {'id': None, 'city': None, 'country': None,

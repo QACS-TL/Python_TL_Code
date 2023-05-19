@@ -27,9 +27,10 @@ menu = """
     2. Display weather data to web browser
     3. Save weather data to local database
     4. Query all rows in local database
-    5. Delete row in local database
-    6. Delete all rows in local database
-    7. Drop local database table
+    5. Query rows for selected city in local database
+    6. Delete row in local database
+    7. Delete all rows in local database
+    8. Drop local database table
     
 """
 
@@ -143,13 +144,15 @@ def weather_menu():
         elif option == "4":
             data.query_all()
         elif option == "5":
+            data.query_city()
+        elif option == "6":
             row = input("Choose a RowID to delete? ")
             data.delete_row(row)
             data.commit()
-        elif option == "6":
+        elif option == "7":
             data.delete_all_rows()
             data.commit()
-        elif option == "7":
+        elif option == "8":
             data.drop_table()
         elif option.lower() == "q":
             print("Quitting..")
