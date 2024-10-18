@@ -32,38 +32,38 @@ def main():
 
     # **********************************
 
-    weather = {'Glasgow': 11,
-               'London': 21,
-               'Edinburgh': 15,
-               'Manchester': 18,
-               'Thurso': 9
-               }
-
-    temps = weather.copy()
-    weather['London'] = 55
-    print(weather)
-    print(temps)
-
-    list = ['Banana', 'Apple', 'Pear']
-    fruit = list.copy()
-    list[1] = 'Orange'
-
-    print(list)
-    print(fruit)
-
-    list = [['Banana', 'Yellow'], ['Apple', 'Red'], ['Pear', 'Green']]
-    fruit = list.copy()
-    list[1][0] = 'Orange'
-
-    print(list)
-    print(fruit)
-
-    list = [55, 66, 77]
-    nums = list.copy()
-    list[1] = list[1] + 22
-
-    print(list)
-    print(nums)
+    # weather = {'Glasgow': 11,
+    #            'London': 21,
+    #            'Edinburgh': 15,
+    #            'Manchester': 18,
+    #            'Thurso': 9
+    #            }
+    #
+    # temps = weather.copy()
+    # weather['London'] = 55
+    # print(weather)
+    # print(temps)
+    #
+    # list = ['Banana', 'Apple', 'Pear']
+    # fruit = list.copy()
+    # list[1] = 'Orange'
+    #
+    # print(list)
+    # print(fruit)
+    #
+    # list = [['Banana', 'Yellow'], ['Apple', 'Red'], ['Pear', 'Green']]
+    # fruit = list.copy()
+    # list[1][0] = 'Orange'
+    #
+    # print(list)
+    # print(fruit)
+    #
+    # list = [55, 66, 77]
+    # nums = list.copy()
+    # list[1] = list[1] + 22
+    #
+    # print(list)
+    # print(nums)
 
     return None
 
