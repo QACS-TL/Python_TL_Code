@@ -40,6 +40,7 @@ def top_level_menu():
             break
         else:
             print("Invalid option")
+
     return None
 
 def main():

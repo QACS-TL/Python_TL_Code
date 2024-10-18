@@ -16,7 +16,7 @@ import pprint
 class Weather_db:
     # Class variable storing location of DB
     # Could store this in an external file or environment variable.
-    DB_LOC = "C:\labs\weather_db.sqlite"
+    DB_LOC = r"C:\labs\weather_db.sqlite"
 
     def __init__(self):
         try:

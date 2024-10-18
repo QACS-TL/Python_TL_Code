@@ -9,107 +9,91 @@
     Download and display the Top 250 Movies Data from IMDB.
 """
 import sys
-# import imdb
-from PyMovieDb import IMDB
+import requests
+from bs4 import BeautifulSoup
 import re
 
-movie_menu = """
+MENU_MOVIES = """
     Movies Menu
     -----------
     1. Get online movie ranking from IMDB
     2. Display top ranking movies
     3. Search for movie
+    Q. Quit
 """
 
 def get_movies():
-    """ Get the top 50 movies online from IMDb """
-    ia = IMDB()
-    #  ia = imdb.IMDb()
-    ranked_movies = {}
-    # Returns 50 movies in a single string with lots of newline (\n) characters and header information
-    pop_movies = ia.popular_movies(genre=None, start_id=1, sort_by=None)
-    # Clean up the data by removing newline chars
-    pop_movies = pop_movies.replace("\n", "")
-    # Clean up the data by removing header info (by searching for the index of the first square bracket ([)
-    index = pop_movies.find("[",1)
-    # Slice the data to leave just the movies (the -1 ensures the final closing curly brace is also removed.
-    pop_movies = pop_movies[index:-1]
-    # pop_movies should be a string that has the structure of a list of dictionaries "[{a:b, c:d,..}{...}{...}]"
-    # Python’s eval() allows you to evaluate arbitrary Python expressions from a string-based or
-    # compiled-code-based input. This function can be handy when you’re trying to dynamically evaluate Python
-    # expressions from any input that comes as a string or a compiled code object.
-    # (https://realpython.com/python-eval-function/)
-    # So, convert the string to become a list of dictionaries
-    movies = list(eval(pop_movies))
-    # The database used by the API host appears to be a bit corrupt because amongst the "good" data it returns a lot
-    # of repeated rows (e.g. currently (06/02/2024) the film called "Deep Fear" is repeated 18 times at the end of the result
-    # set.
-    # So, the following block filters out any films with the same id
-    films = []
-    i = 0
-    while i < len(movies):
-        if films.count(movies[i]["id"]) == 0:  # see if film is already in list
-            films.append(movies[i]["id"])  # Create growing list of id's
-        else:
-            print(movies[i])  # prints repeated movie's details
-            del movies[i]
-            i -= 1
-        i += 1
+    """ Web Scrape the top 250 movies online from letterboxd.com """
+    # Base URL of the Letterboxd Top 250 movies page
+    base_url = "https://letterboxd.com/jack/list/official-top-250-films-with-the-most-fans/page/{}/"
+    top_movies = {} # Movie info - 'title': [rank, rating, img_url]
 
-    # Generate ranked list of movie names
-    for rank, movie in enumerate(movies, start=1):
-        ranked_movies[rank] = movie["name"]
-        if rank >= 50:
-            break
+    # Scrape the first 3 pages (adjust if necessary)
+    for page_num in range(1, 4):  # Adjust range according to the number of pages
+        url = base_url.format(page_num) # Send a GET request to fetch the page content
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    return ranked_movies
+        # Find all movie containers
+        movie_tags = soup.find_all("li", class_="poster-container")
+
+        # Extract movie details
+        for rank, movie in enumerate(movie_tags, start=1 + len(top_movies)):
+            title = movie.find('img', class_='image').get('alt')
+            link = movie.find('div', class_='really-lazy-load').get('data-target-link')
+            rating = movie.get('data-owner-rating')
+            full_link = f"https://letterboxd.com{link}"
+
+            top_movies[title] = [rank, rating, full_link]
+    return top_movies
 
 def display_movies(movies, top):
     """ Display top movies in a given dict """
     if not movies:
         print("No movies")
     else:
-        for rank, name in movies.items():
-            print(f"{rank:>4d}: {name:<30s}")
-            if int(rank) == int(top):
-                break
+        for movie, info in movies.items():
+            rank, rating, link = info
+            print(f"{rank:>4d} {movie:<s}, {rating}/10 - {link}")
+            if int(rank) == int(top): break
     return None
 
 
 def search_movies(pattern=r".", movies=None):
     """ Search for pattern in a given dict of movies """
-    if movies is None:
-        movies = {}
-    if movies:
-        for rank, name in movies.items():
-            m = re.search(pattern, name, re.IGNORECASE)
-            if m:
-                print(f"{rank:>4d}: {name:<30s}")
+    if not movies:
+        print("No movies to search.")
     else:
-        print("No movies to search")
+        movies_matched = 0
+        for movie, info in movies.items():
+            rank, rating, link = info
+            if re.search(pattern, movie, re.IGNORECASE):
+                print(f"{rank:>4} {movie:<s}, {rating}/10 - {link}")
+                movies_matched += 1
+        print(f"{movies_matched} movies matched")
     return None
-
 
 def menu():
     """ Movie Menu """
     films = {}
     while True:
-        print(movie_menu)
-        option = input("Enter option (1-3, [qQ=quit]): ")
+        print(MENU_MOVIES)
+        option = input("Enter option (1-3, [q=quit]): ").strip().lower()
+
         if option == "1":
             films = get_movies()
+            print(f"Fetched {len(films)} movies")
         elif option == "2":
-            maxi = input("How many top movies do you want [default=50]: ")
-            if not maxi:
-                maxi = 50
-            display_movies(films, maxi)
+            top = input("How many top movies do you want to display [default=250]: ").strip() or "250"
+            display_movies(films, top)
         elif option == "3":
-            pattern = input("Enter Regex search pattern: ")
+            pattern = input("Enter title search pattern: ").rstrip()
             search_movies(pattern, films)
-        elif option.lower() == "q":
+        elif option == "q":
+            print("Exiting...")
             break
         else:
-            print("Invalid option")
+            print("Invalid option, please try again")
 
     return None
 

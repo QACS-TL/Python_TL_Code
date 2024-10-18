@@ -78,26 +78,23 @@ def display_weather(forecast:'dict')->'None':
     desc = forecast["weather"][0]["description"]
     icon = forecast["weather"][0]["icon"]
     icon_url = f"http://openweathermap.org/img/wn/{icon}@2x.png"
-    kelvin_temp = forecast["main"]["temp"]
+    temp = forecast["main"]["temp"] - 273.15 # Convert Kelvin to Celsius.
     humidity = forecast["main"]["humidity"]
     speed = forecast["wind"]["speed"]
     compass_idx = round(forecast["wind"]["deg"] // 45)
     direction = compass[compass_idx]
-    kelvin_feels_like = forecast["main"]["feels_like"]
+    feels_like = forecast["main"]["feels_like"] - 273.15 # Convert Kelvin to Celsius.
     now = datetime.datetime.now()
-    date = now.date()
     time = now.strftime("%H:%M:%S")
 
-    # Use CODE from DIGITAL to convert KELVIN to Celsius and add degrees symbol.
-    temp = float(kelvin_temp) - 273.15
-    feels_like = float(kelvin_feels_like) - 273.15
     # Format fields into html string plus optional WIDGET
+    cel_sign = "\N{degree sign}C"
     outlook = f"""
         <html>
            <head><title>Weather for {city}</title></head> 
-           <body<p><a>  Weather for {city}, {country} on {date} at {time}</a></p></body>
+           <body<p><a>  Weather for {city}, {country} at {time}</a></p></body>
            <body<p><tr> Weather is {desc} <IMG SRC="{icon_url}" ALT="Weather" WIDTH=64 HEIGHT=64> </tr></p></body>
-           <body<p>     Temp is {round(temp,2)} but feels like {round(feels_like,2)} </p></body>
+           <body<p>     Temp is {temp:.0f}{cel_sign} but feels like {feels_like:.0f}{cel_sign} </p></body>
            <body<p>     Wind is {speed} towards {direction}</p></body>
            <body<p>     Humidity is {humidity} </p></body>
            <body></body>
@@ -106,11 +103,11 @@ def display_weather(forecast:'dict')->'None':
 
     # write forecast to html file
     try:
-        f_html = open('weather.html', 'w')
-        f_html.write(outlook)
-        f_html.close()
+        with open('weather.html', 'w') as f_html:
+            f_html.write(outlook)
     except Exception as err:
         print(f"Error: {err.args}", file=sys.stderr)
+        return None
 
     # display weather forecast to new web browser tab
     try:
